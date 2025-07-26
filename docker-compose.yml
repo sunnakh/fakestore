@@ -1,0 +1,35 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: fakestore_sqlserver
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    networks:
+      - fakestore-net
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  app:
+    build: .
+    container_name: fakestore_app
+    depends_on:
+      - mssql
+    env_file:
+      - config/.env
+    ports:
+      - "5000:5000"  # Flask runs on port 5000
+    networks:
+      - fakestore-net
+    volumes:
+      - .:/app
+    command: >
+      bash -c "python setup.sh && python main.py"
+
+networks:
+  fakestore-net:
+
+volumes:
+  sql_data:
